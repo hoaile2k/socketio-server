@@ -14,17 +14,22 @@ const connectSocket = (server)=> {
         });
 
         socket.on("request-register", ({userId, userName})=>{
-            console.log(`User ${userId} register`);
+            console.log(`User ${userId} register`,socket.id);
             mapUserInfoUserId[userId] = {
                 userId: userId,
                 userName: userName
             }
+            io.to(socket.id).emit("register-success", mapUserInfoUserId[userId]);
         });
 
         socket.on("request-login", ({userId})=>{
             console.log(`User ${userId} login`, mapUserInfoUserId);
             if(mapUserInfoUserId[userId]){
-                socket.emit("login-success", mapUserInfoUserId[userId]);
+                io.to(socket.id).emit("login-success", mapUserInfoUserId[userId]);
+            }else {
+                io.to(socket.id).emit("login-failed", {
+                    message: "user not found"
+                });
             }
         })
 
