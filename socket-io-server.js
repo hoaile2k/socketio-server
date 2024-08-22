@@ -1,14 +1,34 @@
 
 const {Server} = require("socket.io");
 const connectSocket = (server)=> {
+
+    let mapUserInfoUserId = {};
+
     const io = new Server(server);
     io.on('connection', (socket) => {
-        console.warn("connection socket");
+        console.log("connection socket", socket.id);
         let mapListChatOnRoom = {};
         let mapListUserOnRoom = {};
         socket.on('disconnect', (s) => {
             console.log(`disconnect: ${socket.id}`);
         });
+
+        socket.on("request-register", ({userId, userName})=>{
+            console.log(`User ${userId} register`);
+            mapUserInfoUserId[userId] = {
+                userId: userId,
+                userName: userName
+            }
+        });
+
+        socket.on("request-login", ({userId})=>{
+            console.log(`User ${userId} login`, mapUserInfoUserId);
+            if(mapUserInfoUserId[userId]){
+                socket.emit("login-success", mapUserInfoUserId[userId]);
+            }
+        })
+
+
         socket.on("join", ({username, roomId, userId}) => {
             if (!mapListUserOnRoom[roomId]) {
                 mapListUserOnRoom[roomId] = [];
